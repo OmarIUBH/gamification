@@ -1,0 +1,96 @@
+/**
+ * Seed User Profiles
+ * 
+ * Demo users for leaderboard population and prototype demonstration.
+ * The primary user (id: 'user_current') represents the logged-in student.
+ * Other users simulate a multi-user environment for social comparison.
+ */
+
+const users = [
+  {
+    id: 'user_current',
+    name: 'You',
+    avatar: '🧑‍🎓',
+    totalPoints: 0,
+    level: 1,
+    activitiesCompleted: 0,
+    quizzesCompleted: 0,
+    currentStreak: 0,
+    longestStreak: 0,
+    badgesEarned: [],
+    missionsCompleted: 0,
+    joinDate: '2025-03-01',
+  },
+  {
+    id: 'user_alice',
+    name: 'Alice Chen',
+    avatar: '👩‍💻',
+    totalPoints: 1850,
+    level: 8,
+    activitiesCompleted: 18,
+    quizzesCompleted: 14,
+    currentStreak: 5,
+    longestStreak: 12,
+    badgesEarned: ['first_activity', 'quiz_starter', 'five_activities', 'ten_activities', 'streak_3', 'high_accuracy', 'points_500', 'points_1000', 'mission_complete'],
+    missionsCompleted: 4,
+    joinDate: '2025-01-15',
+  },
+  {
+    id: 'user_bob',
+    name: 'Bob Martinez',
+    avatar: '👨‍🔬',
+    totalPoints: 1200,
+    level: 6,
+    activitiesCompleted: 12,
+    quizzesCompleted: 9,
+    currentStreak: 2,
+    longestStreak: 7,
+    badgesEarned: ['first_activity', 'quiz_starter', 'five_activities', 'ten_activities', 'streak_3', 'points_500', 'points_1000', 'mission_complete'],
+    missionsCompleted: 3,
+    joinDate: '2025-02-01',
+  },
+  {
+    id: 'user_carol',
+    name: 'Carol Johnson',
+    avatar: '👩‍🏫',
+    totalPoints: 2400,
+    level: 9,
+    activitiesCompleted: 22,
+    quizzesCompleted: 18,
+    currentStreak: 8,
+    longestStreak: 15,
+    badgesEarned: ['first_activity', 'quiz_starter', 'five_activities', 'ten_activities', 'streak_3', 'streak_7', 'high_accuracy', 'points_500', 'points_1000', 'mission_complete', 'three_missions', 'persistence', 'all_topics'],
+    missionsCompleted: 5,
+    joinDate: '2025-01-10',
+  },
+  {
+    id: 'user_david',
+    name: 'David Kim',
+    avatar: '👨‍💼',
+    totalPoints: 680,
+    level: 4,
+    activitiesCompleted: 7,
+    quizzesCompleted: 5,
+    currentStreak: 0,
+    longestStreak: 4,
+    badgesEarned: ['first_activity', 'quiz_starter', 'five_activities', 'points_500'],
+    missionsCompleted: 1,
+    joinDate: '2025-02-20',
+  },
+  {
+    id: 'user_emma',
+    name: 'Emma Wilson',
+    avatar: '👩‍🎨',
+    totalPoints: 950,
+    level: 5,
+    activitiesCompleted: 9,
+    quizzesCompleted: 7,
+    currentStreak: 3,
+    longestStreak: 6,
+    badgesEarned: ['first_activity', 'quiz_starter', 'five_activities', 'streak_3', 'points_500'],
+    missionsCompleted: 2,
+    joinDate: '2025-02-10',
+  },
+];
+
+export default users;
