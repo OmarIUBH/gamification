@@ -241,6 +241,13 @@ function gameReducer(state, action) {
       };
     }
 
+    case 'LOGIN_USER': {
+      return {
+        ...state,
+        userName: action.payload.name,
+      };
+    }
+
     case 'RESET_STATE': {
       localStorage.removeItem(STORAGE_KEY);
       return getInitialState();
@@ -289,6 +296,10 @@ export function GameProvider({ children }) {
     dispatch({ type: 'DISMISS_NOTIFICATION', payload: notificationId });
   }, []);
 
+  const loginUser = useCallback((name) => {
+    dispatch({ type: 'LOGIN_USER', payload: { name } });
+  }, []);
+
   const resetState = useCallback(() => {
     dispatch({ type: 'RESET_STATE' });
   }, []);
@@ -329,6 +340,7 @@ export function GameProvider({ children }) {
     completeActivity,
     claimMission,
     dismissNotification,
+    loginUser,
     resetState,
   };
 
