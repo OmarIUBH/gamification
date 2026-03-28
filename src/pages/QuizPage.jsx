@@ -81,8 +81,12 @@ export default function QuizPage() {
     }
 
     return () => {
-      if (player && typeof player.destroy === 'function') {
-        player.destroy();
+      try {
+        if (player && typeof player.destroy === 'function') {
+          player.destroy();
+        }
+      } catch (e) {
+        console.warn('YT destroy error:', e);
       }
       window.onYouTubeIframeAPIReady = null;
     };
@@ -157,20 +161,20 @@ export default function QuizPage() {
     }
   };
 
-  // Results Screen Logic
-  if (showResults) {
-    const accuracy = Math.round((correctCount / totalQuestions) * 100);
-    const scoreClass = accuracy >= 90 ? 'excellent' : accuracy >= 70 ? 'good' : accuracy >= 50 ? 'average' : 'poor';
-    const getMessage = () => {
-      if (accuracy === 100) return "PERFECT SCORE! You're absolutely crushing it! 🌟🔥";
-      if (accuracy >= 80) return "Amazing job! You really know your stuff! 💪";
-      if (accuracy >= 60) return "Good effort! Keep pushing higher! 📚";
-      return "No worries — every attempt makes you stronger! 🌱";
-    };
+  // Results and Quiz Views Combined
+  const accuracy = Math.round((correctCount / totalQuestions) * 100);
+  const scoreClass = accuracy >= 90 ? 'excellent' : accuracy >= 70 ? 'good' : accuracy >= 50 ? 'average' : 'poor';
+  const getMessage = () => {
+    if (accuracy === 100) return "PERFECT SCORE! You're absolutely crushing it! 🌟🔥";
+    if (accuracy >= 80) return "Amazing job! You really know your stuff! 💪";
+    if (accuracy >= 60) return "Good effort! Keep pushing higher! 📚";
+    return "No worries — every attempt makes you stronger! 🌱";
+  };
 
-    return (
-      <>
-        <div id="youtube-audio-player" style={{ display: 'none' }}></div>
+  return (
+    <>
+      <div id="youtube-audio-player" style={{ display: 'none' }}></div>
+      {showResults ? (
         <div className="quiz-container">
           <div className="results-container">
             <h2 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '8px', fontFamily: 'Space Grotesk, sans-serif' }}>
@@ -216,110 +220,102 @@ export default function QuizPage() {
             </div>
           </div>
         </div>
-      </>
-    );
-  }
+      ) : (
+        <div className="quiz-container">
+          {/* Header */}
+          <div style={{ marginBottom: '24px' }}>
+            <Link to="/activities" style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }} onClick={playClick}>← Back to Activities</Link>
+            <h2 style={{ fontSize: '1.3rem', fontWeight: 800, marginTop: '8px', fontFamily: 'Space Grotesk, sans-serif' }}>
+              {activity.title}
+            </h2>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '4px' }}>
+              <span className={`activity-topic-tag topic-${activity.topic}`}>{activity.topic}</span>
+              <span style={{ fontSize: '0.8rem', color: 'var(--color-xp)', fontWeight: 700 }}>⭐ {activity.points} pts</span>
+            </div>
+          </div>
 
-  // Quiz Question Screen
-  return (
-    <>
-      {/* Background Music Test (Managed by YT API) */}
-      <div id="youtube-audio-player" style={{ display: 'none' }}></div>
+          {/* Progress */}
+          <div className="quiz-progress">
+            <ProgressBar
+              value={currentQuestion + 1}
+              max={totalQuestions}
+              label={`Question ${currentQuestion + 1} of ${totalQuestions}`}
+            />
+          </div>
 
-      <div className="quiz-container">
-        {/* Header */}
-      <div style={{ marginBottom: '24px' }}>
-        <Link to="/activities" style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }} onClick={playClick}>← Back to Activities</Link>
-        <h2 style={{ fontSize: '1.3rem', fontWeight: 800, marginTop: '8px', fontFamily: 'Space Grotesk, sans-serif' }}>
-          {activity.title}
-        </h2>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '4px' }}>
-          <span className={`activity-topic-tag topic-${activity.topic}`}>{activity.topic}</span>
-          <span style={{ fontSize: '0.8rem', color: 'var(--color-xp)', fontWeight: 700 }}>⭐ {activity.points} pts</span>
-        </div>
-      </div>
+          {/* Question */}
+          <div className="card" style={{ marginBottom: '24px' }}>
+            <p className="quiz-question-text">{question.text}</p>
 
-      {/* Progress */}
-      <div className="quiz-progress">
-        <ProgressBar
-          value={currentQuestion + 1}
-          max={totalQuestions}
-          label={`Question ${currentQuestion + 1} of ${totalQuestions}`}
-        />
-      </div>
+            <div className="quiz-options">
+              {question.options.map((option, index) => {
+                let className = 'quiz-option';
+                if (isAnswered) {
+                  className += ' disabled';
+                  if (index === question.correctIndex) className += ' correct';
+                  else if (index === selectedAnswer && selectedAnswer !== question.correctIndex) className += ' incorrect';
+                } else if (index === selectedAnswer) {
+                  className += ' selected';
+                }
 
-      {/* Question */}
-      <div className="card" style={{ marginBottom: '24px' }}>
-        <p className="quiz-question-text">{question.text}</p>
+                return (
+                  <div
+                    key={index}
+                    className={className}
+                    onClick={() => handleSelectAnswer(index)}
+                  >
+                    <span className="quiz-option-letter">{letters[index]}</span>
+                    <span>{option}</span>
+                    {isAnswered && index === question.correctIndex && <span style={{ marginLeft: 'auto', fontSize: '1.2rem' }}>✅</span>}
+                    {isAnswered && index === selectedAnswer && selectedAnswer !== question.correctIndex && <span style={{ marginLeft: 'auto', fontSize: '1.2rem' }}>❌</span>}
+                  </div>
+                );
+              })}
+            </div>
 
-        <div className="quiz-options">
-          {question.options.map((option, index) => {
-            let className = 'quiz-option';
-            if (isAnswered) {
-              className += ' disabled';
-              if (index === question.correctIndex) className += ' correct';
-              else if (index === selectedAnswer && selectedAnswer !== question.correctIndex) className += ' incorrect';
-            } else if (index === selectedAnswer) {
-              className += ' selected';
-            }
-
-            return (
-              <div
-                key={index}
-                className={className}
-                onClick={() => handleSelectAnswer(index)}
-              >
-                <span className="quiz-option-letter">{letters[index]}</span>
-                <span>{option}</span>
-                {isAnswered && index === question.correctIndex && <span style={{ marginLeft: 'auto', fontSize: '1.2rem' }}>✅</span>}
-                {isAnswered && index === selectedAnswer && selectedAnswer !== question.correctIndex && <span style={{ marginLeft: 'auto', fontSize: '1.2rem' }}>❌</span>}
+            {/* Explanation */}
+            {isAnswered && (
+              <div className="quiz-explanation">
+                💡 {question.explanation}
               </div>
-            );
-          })}
+            )}
+
+            {/* Current Hint */}
+            {currentHint && !isAnswered && (
+              <div className="quiz-explanation" style={{ background: 'rgba(255, 159, 67, 0.1)', borderColor: 'var(--color-warning)', color: 'var(--color-warning)' }}>
+                {currentHint}
+              </div>
+            )}
+          </div>
+
+          {/* Actions */}
+          <div className="quiz-actions" style={{ display: 'flex', gap: '16px', justifyContent: 'flex-end', alignItems: 'center' }}>
+            {!isAnswered && !currentHint && (
+              <button 
+                className="btn btn-secondary" 
+                style={{ marginRight: 'auto', fontSize: '0.85rem' }}
+                onClick={handleShowHint}
+              >
+                💡 Need a Hint? (-15% pts)
+              </button>
+            )}
+            
+            {!isAnswered ? (
+              <button
+                className="btn btn-primary"
+                onClick={handleConfirm}
+                disabled={selectedAnswer === null}
+              >
+                ⚡ Confirm Answer
+              </button>
+            ) : (
+              <button className="btn btn-primary" onClick={handleNext}>
+                {currentQuestion < totalQuestions - 1 ? 'Next Question →' : 'See Results 🎉'}
+              </button>
+            )}
+          </div>
         </div>
-
-        {/* Explanation */}
-        {isAnswered && (
-          <div className="quiz-explanation">
-            💡 {question.explanation}
-          </div>
-        )}
-
-        {/* Current Hint */}
-        {currentHint && !isAnswered && (
-          <div className="quiz-explanation" style={{ background: 'rgba(255, 159, 67, 0.1)', borderColor: 'var(--color-warning)', color: 'var(--color-warning)' }}>
-            {currentHint}
-          </div>
-        )}
-      </div>
-
-      {/* Actions */}
-      <div className="quiz-actions" style={{ display: 'flex', gap: '16px', justifyContent: 'flex-end', alignItems: 'center' }}>
-        {!isAnswered && !currentHint && (
-          <button 
-            className="btn btn-secondary" 
-            style={{ marginRight: 'auto', fontSize: '0.85rem' }}
-            onClick={handleShowHint}
-          >
-            💡 Need a Hint? (-15% pts)
-          </button>
-        )}
-        
-        {!isAnswered ? (
-          <button
-            className="btn btn-primary"
-            onClick={handleConfirm}
-            disabled={selectedAnswer === null}
-          >
-            ⚡ Confirm Answer
-          </button>
-        ) : (
-          <button className="btn btn-primary" onClick={handleNext}>
-            {currentQuestion < totalQuestions - 1 ? 'Next Question →' : 'See Results 🎉'}
-          </button>
-        )}
-      </div>
-    </div>
+      )}
     </>
   );
 }
