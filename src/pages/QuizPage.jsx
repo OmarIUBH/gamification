@@ -46,16 +46,9 @@ export default function QuizPage() {
 
   // YouTube Background Music initialization
   useEffect(() => {
-    // Check if API is already loaded
-    if (!window.YT) {
-      const tag = document.createElement('script');
-      tag.src = 'https://www.youtube.com/iframe_api';
-      const firstScriptTag = document.getElementsByTagName('script')[0];
-      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-    }
-
     let player;
-    window.onYouTubeIframeAPIReady = () => {
+
+    const initPlayer = () => {
       player = new window.YT.Player('youtube-audio-player', {
         height: '0',
         width: '0',
@@ -73,6 +66,19 @@ export default function QuizPage() {
         },
       });
     };
+
+    // Check if API is already loaded
+    if (!window.YT) {
+      const tag = document.createElement('script');
+      tag.src = 'https://www.youtube.com/iframe_api';
+      const firstScriptTag = document.getElementsByTagName('script')[0];
+      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+      
+      window.onYouTubeIframeAPIReady = initPlayer;
+    } else if (window.YT && window.YT.Player) {
+      // If already loaded from a previous visit
+      initPlayer();
+    }
 
     return () => {
       if (player && typeof player.destroy === 'function') {
@@ -151,7 +157,7 @@ export default function QuizPage() {
     }
   };
 
-  // Results Screen
+  // Results Screen Logic
   if (showResults) {
     const accuracy = Math.round((correctCount / totalQuestions) * 100);
     const scoreClass = accuracy >= 90 ? 'excellent' : accuracy >= 70 ? 'good' : accuracy >= 50 ? 'average' : 'poor';
@@ -163,61 +169,65 @@ export default function QuizPage() {
     };
 
     return (
-      <div className="quiz-container">
-        <div className="results-container">
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '8px', fontFamily: 'Space Grotesk, sans-serif' }}>
-            Quiz Complete! 🎉
-          </h2>
-          <p style={{ color: 'var(--text-secondary)', marginBottom: '8px' }}>{activity.title}</p>
+      <>
+        <div id="youtube-audio-player" style={{ display: 'none' }}></div>
+        <div className="quiz-container">
+          <div className="results-container">
+            <h2 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '8px', fontFamily: 'Space Grotesk, sans-serif' }}>
+              Quiz Complete! 🎉
+            </h2>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '8px' }}>{activity.title}</p>
 
-          <div className={`results-score ${scoreClass}`}>{accuracy}%</div>
-          <p className="results-message">{getMessage()}</p>
+            <div className={`results-score ${scoreClass}`}>{accuracy}%</div>
+            <p className="results-message">{getMessage()}</p>
 
-          <div className="results-breakdown">
-            <div className="results-stat">
-              <div className="results-stat-value text-success">{correctCount}</div>
-              <div className="results-stat-label">Correct</div>
+            <div className="results-breakdown">
+              <div className="results-stat">
+                <div className="results-stat-value text-success">{correctCount}</div>
+                <div className="results-stat-label">Correct</div>
+              </div>
+              <div className="results-stat">
+                <div className="results-stat-value text-danger">{totalQuestions - correctCount}</div>
+                <div className="results-stat-label">Incorrect</div>
+              </div>
+              <div className="results-stat">
+                <div className="results-stat-value text-accent">{totalQuestions}</div>
+                <div className="results-stat-label">Total</div>
+              </div>
             </div>
-            <div className="results-stat">
-              <div className="results-stat-value text-danger">{totalQuestions - correctCount}</div>
-              <div className="results-stat-label">Incorrect</div>
-            </div>
-            <div className="results-stat">
-              <div className="results-stat-value text-accent">{totalQuestions}</div>
-              <div className="results-stat-label">Total</div>
-            </div>
-          </div>
 
-          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <button className="btn btn-secondary" onClick={() => {
-              playClick();
-              setCurrentQuestion(0);
-              setSelectedAnswer(null);
-              setIsAnswered(false);
-              setCorrectCount(0);
-              setShowResults(false);
-              setHasSubmitted(false);
-              setHintsUsed(0);
-              setCurrentHint(null);
-              playQuizStart();
-            }}>
-              🔄 Retry Quiz
-            </button>
-            <Link to="/activities" className="btn btn-primary" onClick={playClick}>📚 More Activities</Link>
-            <Link to="/dashboard" className="btn btn-secondary" onClick={playClick}>📊 Dashboard</Link>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+              <button className="btn btn-secondary" onClick={() => {
+                playClick();
+                setCurrentQuestion(0);
+                setSelectedAnswer(null);
+                setIsAnswered(false);
+                setCorrectCount(0);
+                setShowResults(false);
+                setHasSubmitted(false);
+                setHintsUsed(0);
+                setCurrentHint(null);
+                playQuizStart();
+              }}>
+                🔄 Retry Quiz
+              </button>
+              <Link to="/activities" className="btn btn-primary" onClick={playClick}>📚 More Activities</Link>
+              <Link to="/dashboard" className="btn btn-secondary" onClick={playClick}>📊 Dashboard</Link>
+            </div>
           </div>
         </div>
-      </div>
+      </>
     );
   }
 
   // Quiz Question Screen
   return (
-    <div className="quiz-container">
+    <>
       {/* Background Music Test (Managed by YT API) */}
       <div id="youtube-audio-player" style={{ display: 'none' }}></div>
 
-      {/* Header */}
+      <div className="quiz-container">
+        {/* Header */}
       <div style={{ marginBottom: '24px' }}>
         <Link to="/activities" style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }} onClick={playClick}>← Back to Activities</Link>
         <h2 style={{ fontSize: '1.3rem', fontWeight: 800, marginTop: '8px', fontFamily: 'Space Grotesk, sans-serif' }}>
@@ -310,5 +320,6 @@ export default function QuizPage() {
         )}
       </div>
     </div>
+    </>
   );
 }
