@@ -51,8 +51,6 @@ export default function LandingPage() {
 
       {/* Hero Section */}
       <section className="landing-hero">
-        <div className="landing-badge">🎓 Academic Research Prototype</div>
-
         <h1 className="landing-title">
           Learn Smarter with <span className="gradient">Gamification</span>
         </h1>
