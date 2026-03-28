@@ -44,6 +44,44 @@ export default function QuizPage() {
     playQuizStart();
   }, [activityId]);
 
+  // YouTube Background Music initialization
+  useEffect(() => {
+    // Check if API is already loaded
+    if (!window.YT) {
+      const tag = document.createElement('script');
+      tag.src = 'https://www.youtube.com/iframe_api';
+      const firstScriptTag = document.getElementsByTagName('script')[0];
+      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+    }
+
+    let player;
+    window.onYouTubeIframeAPIReady = () => {
+      player = new window.YT.Player('youtube-audio-player', {
+        height: '0',
+        width: '0',
+        videoId: 'eRZbQzbpUlU',
+        playerVars: {
+          autoplay: 1,
+          loop: 1,
+          playlist: 'eRZbQzbpUlU', // playlist needs to be the same video id to loop a single video
+        },
+        events: {
+          onReady: (event) => {
+            event.target.setVolume(15); // Set to 15% volume so it doesn't scare the user
+            event.target.playVideo();
+          },
+        },
+      });
+    };
+
+    return () => {
+      if (player && typeof player.destroy === 'function') {
+        player.destroy();
+      }
+      window.onYouTubeIframeAPIReady = null;
+    };
+  }, []);
+
   if (!activity) {
     return (
       <div className="empty-state">
@@ -176,15 +214,8 @@ export default function QuizPage() {
   // Quiz Question Screen
   return (
     <div className="quiz-container">
-      {/* Background Music Test */}
-      <iframe
-        width="0"
-        height="0"
-        src="https://www.youtube.com/embed/eRZbQzbpUlU?autoplay=1&list=PLeqiJFq_nyyb_Lah0vq9Uo9IZGb80rUiK&index=3"
-        frameBorder="0"
-        allow="autoplay; encrypted-media"
-        title="Background Music"
-      ></iframe>
+      {/* Background Music Test (Managed by YT API) */}
+      <div id="youtube-audio-player" style={{ display: 'none' }}></div>
 
       {/* Header */}
       <div style={{ marginBottom: '24px' }}>
