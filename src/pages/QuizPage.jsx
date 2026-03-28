@@ -9,7 +9,7 @@
  * - Badge/mission/level-up notifications
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useGame } from '../context/GameContext';
 import activities from '../data/activities';
@@ -73,6 +73,19 @@ export default function QuizPage() {
   const question = activity.questions[currentQuestion];
   const totalQuestions = activity.questions.length;
   const letters = ['A', 'B', 'C', 'D'];
+
+  // Shuffle options so users memorize the answer, not the position
+  const shuffledOptions = useMemo(() => {
+    if (!question) return [];
+    // Map with original indices before shuffling
+    const mapped = question.options.map((opt, idx) => ({ text: opt, originalIndex: idx }));
+    // Fisher-Yates shuffle
+    for (let i = mapped.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [mapped[i], mapped[j]] = [mapped[j], mapped[i]];
+    }
+    return mapped;
+  }, [question]);
 
   const handleSelectAnswer = (index) => {
     if (isAnswered) return;
@@ -222,13 +235,16 @@ export default function QuizPage() {
             <p className="quiz-question-text">{question.text}</p>
 
             <div className="quiz-options">
-              {question.options.map((option, index) => {
+              {shuffledOptions.map((optObj, index) => {
                 let className = 'quiz-option';
+                const isCorrectOption = optObj.originalIndex === question.correctIndex;
+                const isSelectedOption = optObj.originalIndex === selectedAnswer;
+
                 if (isAnswered) {
                   className += ' disabled';
-                  if (index === question.correctIndex) className += ' correct';
-                  else if (index === selectedAnswer && selectedAnswer !== question.correctIndex) className += ' incorrect';
-                } else if (index === selectedAnswer) {
+                  if (isCorrectOption) className += ' correct';
+                  else if (isSelectedOption && !isCorrectOption) className += ' incorrect';
+                } else if (isSelectedOption) {
                   className += ' selected';
                 }
 
@@ -236,12 +252,12 @@ export default function QuizPage() {
                   <div
                     key={index}
                     className={className}
-                    onClick={() => handleSelectAnswer(index)}
+                    onClick={() => handleSelectAnswer(optObj.originalIndex)}
                   >
                     <span className="quiz-option-letter">{letters[index]}</span>
-                    <span>{option}</span>
-                    {isAnswered && index === question.correctIndex && <span style={{ marginLeft: 'auto', fontSize: '1.2rem' }}>✅</span>}
-                    {isAnswered && index === selectedAnswer && selectedAnswer !== question.correctIndex && <span style={{ marginLeft: 'auto', fontSize: '1.2rem' }}>❌</span>}
+                    <span>{optObj.text}</span>
+                    {isAnswered && isCorrectOption && <span style={{ marginLeft: 'auto', fontSize: '1.2rem' }}>✅</span>}
+                    {isAnswered && isSelectedOption && !isCorrectOption && <span style={{ marginLeft: 'auto', fontSize: '1.2rem' }}>❌</span>}
                   </div>
                 );
               })}
