@@ -15,6 +15,7 @@ import { useGame } from '../context/GameContext';
 import activities from '../data/activities';
 import ProgressBar from '../components/ProgressBar';
 import { playClick, playCorrect, playIncorrect, playQuizStart, playPerfect } from '../engine/soundEngine';
+import YouTube from 'react-youtube';
 
 export default function QuizPage() {
   const { activityId } = useParams();
@@ -44,53 +45,20 @@ export default function QuizPage() {
     playQuizStart();
   }, [activityId]);
 
-  // YouTube Background Music initialization
-  useEffect(() => {
-    let player;
+  const onPlayerReady = (event) => {
+    event.target.setVolume(15); 
+    event.target.playVideo();
+  };
 
-    const initPlayer = () => {
-      player = new window.YT.Player('youtube-audio-player', {
-        height: '0',
-        width: '0',
-        videoId: 'eRZbQzbpUlU',
-        playerVars: {
-          autoplay: 1,
-          loop: 1,
-          playlist: 'eRZbQzbpUlU', // playlist needs to be the same video id to loop a single video
-        },
-        events: {
-          onReady: (event) => {
-            event.target.setVolume(15); // Set to 15% volume so it doesn't scare the user
-            event.target.playVideo();
-          },
-        },
-      });
-    };
-
-    // Check if API is already loaded
-    if (!window.YT) {
-      const tag = document.createElement('script');
-      tag.src = 'https://www.youtube.com/iframe_api';
-      const firstScriptTag = document.getElementsByTagName('script')[0];
-      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-      
-      window.onYouTubeIframeAPIReady = initPlayer;
-    } else if (window.YT && window.YT.Player) {
-      // If already loaded from a previous visit
-      initPlayer();
-    }
-
-    return () => {
-      try {
-        if (player && typeof player.destroy === 'function') {
-          player.destroy();
-        }
-      } catch (e) {
-        console.warn('YT destroy error:', e);
-      }
-      window.onYouTubeIframeAPIReady = null;
-    };
-  }, []);
+  const ytOpts = {
+    height: '0',
+    width: '0',
+    playerVars: {
+      autoplay: 1,
+      loop: 1,
+      playlist: 'eRZbQzbpUlU', // playlist needs to be the same video id to loop
+    },
+  };
 
   if (!activity) {
     return (
@@ -173,7 +141,13 @@ export default function QuizPage() {
 
   return (
     <>
-      <div id="youtube-audio-player" style={{ display: 'none' }}></div>
+      <YouTube 
+        videoId="eRZbQzbpUlU" 
+        opts={ytOpts} 
+        onReady={onPlayerReady} 
+        className="hide-youtube-player"
+        style={{ display: 'none' }}
+      />
       {showResults ? (
         <div className="quiz-container">
           <div className="results-container">
