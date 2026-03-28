@@ -24,10 +24,10 @@ export default function AnimatedBackground() {
     let animId;
     let time = 0;
 
-    // Gaming Symbols
+    // Programming & Math Symbols
     const symbols = [];
-    const SYMBOL_COUNT = 25;
-    const symbolTypes = ['triangle', 'circle', 'square', 'cross'];
+    const SYMBOL_COUNT = 30;
+    const symbolTypes = ['{ }', '< />', '[ ]', '()', '∑', '∫', 'π', 'ƒ(x)', '=>', '++'];
     const colors = [
       '#FF006E', // Neon Pink
       '#00F5FF', // Neon Cyan
@@ -39,14 +39,14 @@ export default function AnimatedBackground() {
       symbols.push({
         x: Math.random() * width,
         y: Math.random() * height,
-        size: Math.random() * 15 + 10,
+        size: Math.random() * 20 + 20, // Slightly larger for text readability
         type: symbolTypes[Math.floor(Math.random() * symbolTypes.length)],
         color: colors[Math.floor(Math.random() * colors.length)],
         speedY: (Math.random() * 0.5 + 0.2) * -1, // Float upwards
         speedX: (Math.random() - 0.5) * 0.4,
         rotation: Math.random() * Math.PI * 2,
         rotSpeed: (Math.random() - 0.5) * 0.02,
-        opacity: Math.random() * 0.3 + 0.1
+        opacity: Math.random() * 0.3 + 0.2
       });
     }
 
@@ -108,7 +108,7 @@ export default function AnimatedBackground() {
       }
       ctx.restore();
 
-      // 3. Draw Floating Gaming Symbols
+      // 3. Draw Floating Programming & Math Symbols
       symbols.forEach(sym => {
         sym.y += sym.speedY;
         sym.x += sym.speedX;
@@ -123,48 +123,18 @@ export default function AnimatedBackground() {
         ctx.translate(sym.x, sym.y);
         ctx.rotate(sym.rotation);
         
-        ctx.strokeStyle = sym.color;
-        ctx.lineWidth = 3;
-        
         // Add neon glow
         ctx.shadowBlur = 15;
         ctx.shadowColor = sym.color;
         ctx.globalAlpha = sym.opacity + (Math.sin(time * 0.05 + sym.x) * 0.1); 
 
-        ctx.beginPath();
-        const s = sym.size;
-        
-        switch (sym.type) {
-          case 'triangle':
-            ctx.moveTo(0, -s);
-            ctx.lineTo(s * 0.866, s * 0.5);
-            ctx.lineTo(-s * 0.866, s * 0.5);
-            ctx.closePath();
-            break;
-          case 'square':
-            ctx.rect(-s/2, -s/2, s, s);
-            break;
-          case 'circle':
-            ctx.arc(0, 0, s/1.2, 0, Math.PI * 2);
-            break;
-          case 'cross':
-            const thick = s/3;
-            ctx.moveTo(-s, -thick/2);
-            ctx.lineTo(-thick/2, -thick/2);
-            ctx.lineTo(-thick/2, -s);
-            ctx.lineTo(thick/2, -s);
-            ctx.lineTo(thick/2, -thick/2);
-            ctx.lineTo(s, -thick/2);
-            ctx.lineTo(s, thick/2);
-            ctx.lineTo(thick/2, thick/2);
-            ctx.lineTo(thick/2, s);
-            ctx.lineTo(-thick/2, s);
-            ctx.lineTo(-thick/2, thick/2);
-            ctx.lineTo(-s, thick/2);
-            ctx.closePath();
-            break;
-        }
-        ctx.stroke();
+        // Draw text symbol
+        ctx.font = `bold ${sym.size}px "Space Grotesk", sans-serif`;
+        ctx.fillStyle = sym.color;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(sym.type, 0, 0);
+
         ctx.restore();
       });
 
