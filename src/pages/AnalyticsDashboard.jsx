@@ -39,11 +39,30 @@ export default function AnalyticsDashboard() {
 
   return (
     <div>
-      <div className="page-header">
-        <h1 className="page-title">Analytics Dashboard</h1>
-        <p className="page-subtitle">
-          Research-oriented view of engagement metrics and gamification effectiveness.
-        </p>
+      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div>
+          <h1 className="page-title">Analytics Dashboard</h1>
+          <p className="page-subtitle">
+            Research-oriented view of engagement metrics and gamification effectiveness.
+          </p>
+        </div>
+        <button 
+          className="btn btn-secondary" 
+          onClick={() => {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ 
+              gameState: game, 
+              analytics: analytics 
+            }, null, 2));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", `eduquest_export_${new Date().toISOString().split('T')[0]}.json`);
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+          }}
+        >
+          📥 Export Research Data
+        </button>
       </div>
 
       {/* Key Metrics */}
