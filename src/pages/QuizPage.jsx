@@ -176,6 +176,16 @@ export default function QuizPage() {
   // Quiz Question Screen
   return (
     <div className="quiz-container">
+      {/* Background Music Test */}
+      <iframe
+        width="0"
+        height="0"
+        src="https://www.youtube.com/embed/eRZbQzbpUlU?autoplay=1&list=PLeqiJFq_nyyb_Lah0vq9Uo9IZGb80rUiK&index=3"
+        frameBorder="0"
+        allow="autoplay; encrypted-media"
+        title="Background Music"
+      ></iframe>
+
       {/* Header */}
       <div style={{ marginBottom: '24px' }}>
         <Link to="/activities" style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }} onClick={playClick}>← Back to Activities</Link>
