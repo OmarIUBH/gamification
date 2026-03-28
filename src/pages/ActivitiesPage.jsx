@@ -81,14 +81,17 @@ export default function ActivitiesPage() {
               className={`activity-card ${isCompleted ? 'completed' : ''}`}
               onClick={() => navigate(`/quiz/${activity.id}`)}
             >
-              {isCompleted && <span className="activity-completed-badge">✓ Done</span>}
               <div className="activity-card-header">
                 <span className={`activity-topic-tag topic-${activity.topic}`}>
                   {activity.topic}
                 </span>
-                <span className={`activity-difficulty difficulty-${activity.difficulty}`}>
-                  {activity.difficulty}
-                </span>
+                {isCompleted ? (
+                  <span className="activity-completed-badge" style={{ position: 'relative', right: 'auto', top: 'auto', display: 'inline-block' }}>✓ Done</span>
+                ) : (
+                  <span className={`activity-difficulty difficulty-${activity.difficulty}`}>
+                    {activity.difficulty}
+                  </span>
+                )}
               </div>
               <h3 className="activity-title">{activity.title}</h3>
               <p className="activity-description">{activity.description}</p>

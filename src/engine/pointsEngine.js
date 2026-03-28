@@ -17,10 +17,16 @@
  * @param {number} totalQuestions - Total number of questions
  * @returns {object} Breakdown of points earned
  */
-export function calculateActivityPoints(basePoints, correctAnswers, totalQuestions) {
+export function calculateActivityPoints(basePoints, correctAnswers, totalQuestions, hintsUsed = 0) {
   const accuracy = totalQuestions > 0 ? correctAnswers / totalQuestions : 0;
   const accuracyMultiplier = accuracy >= 1 ? 1.5 : accuracy >= 0.8 ? 1.2 : accuracy >= 0.5 ? 1.0 : 0.5;
-  const earnedPoints = Math.round(basePoints * accuracyMultiplier);
+  let earnedPoints = Math.round(basePoints * accuracyMultiplier);
+
+  // Apply hint penalty (15% deduction per hint used, min 0)
+  if (hintsUsed > 0) {
+    const penalty = Math.round(earnedPoints * (0.15 * hintsUsed));
+    earnedPoints = Math.max(0, earnedPoints - penalty);
+  }
 
   return {
     basePoints,

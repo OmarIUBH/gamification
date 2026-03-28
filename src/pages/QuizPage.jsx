@@ -28,6 +28,8 @@ export default function QuizPage() {
   const [correctCount, setCorrectCount] = useState(0);
   const [showResults, setShowResults] = useState(false);
   const [hasSubmitted, setHasSubmitted] = useState(false);
+  const [hintsUsed, setHintsUsed] = useState(0);
+  const [currentHint, setCurrentHint] = useState(null);
 
   // Reset state when activity changes + play start sound
   useEffect(() => {
@@ -37,6 +39,8 @@ export default function QuizPage() {
     setCorrectCount(0);
     setShowResults(false);
     setHasSubmitted(false);
+    setHintsUsed(0);
+    setCurrentHint(null);
     playQuizStart();
   }, [activityId]);
 
@@ -83,13 +87,29 @@ export default function QuizPage() {
 
       if (!hasSubmitted) {
         const finalCorrect = correctCount;
-        completeActivity(activity.id, finalCorrect, totalQuestions, activity.topic);
+        completeActivity(activity.id, finalCorrect, totalQuestions, activity.topic, hintsUsed);
         setHasSubmitted(true);
         // Play perfect sound if 100%
         if (finalCorrect === totalQuestions) {
           setTimeout(() => playPerfect(), 500);
         }
       }
+    }
+  };
+
+  const handleShowHint = () => {
+    if (isAnswered || currentHint) return;
+    if (window.confirm("Using a hint will deduct 15% from your final score for this activity. Are you sure you want to use a hint?")) {
+      playClick();
+      setHintsUsed((h) => h + 1);
+      
+      // Determine what to show for the hint.
+      // Easiest is to tell them one option that is definitely NOT correct.
+      const incorrectIndices = [0, 1, 2, 3]
+        .filter(i => i < question.options.length && i !== question.correctIndex);
+      const randomIncorrect = incorrectIndices[Math.floor(Math.random() * incorrectIndices.length)];
+      
+      setCurrentHint(`💡 Hint: The correct answer is NOT "${question.options[randomIncorrect]}".`);
     }
   };
 
@@ -139,6 +159,8 @@ export default function QuizPage() {
               setCorrectCount(0);
               setShowResults(false);
               setHasSubmitted(false);
+              setHintsUsed(0);
+              setCurrentHint(null);
               playQuizStart();
             }}>
               🔄 Retry Quiz
@@ -211,10 +233,27 @@ export default function QuizPage() {
             💡 {question.explanation}
           </div>
         )}
+
+        {/* Current Hint */}
+        {currentHint && !isAnswered && (
+          <div className="quiz-explanation" style={{ background: 'rgba(255, 159, 67, 0.1)', borderColor: 'var(--color-warning)', color: 'var(--color-warning)' }}>
+            {currentHint}
+          </div>
+        )}
       </div>
 
       {/* Actions */}
-      <div className="quiz-actions">
+      <div className="quiz-actions" style={{ display: 'flex', gap: '16px', justifyContent: 'flex-end', alignItems: 'center' }}>
+        {!isAnswered && !currentHint && (
+          <button 
+            className="btn btn-secondary" 
+            style={{ marginRight: 'auto', fontSize: '0.85rem' }}
+            onClick={handleShowHint}
+          >
+            💡 Need a Hint? (-15% pts)
+          </button>
+        )}
+        
         {!isAnswered ? (
           <button
             className="btn btn-primary"

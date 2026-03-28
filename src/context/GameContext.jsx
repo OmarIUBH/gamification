@@ -85,13 +85,13 @@ function gameReducer(state, action) {
   switch (action.type) {
 
     case 'COMPLETE_ACTIVITY': {
-      const { activityId, correctAnswers, totalQuestions, topic } = action.payload;
+      const { activityId, correctAnswers, totalQuestions, topic, hintsUsed } = action.payload;
       
       // Calculate points
       const activity = activities.find((a) => a.id === activityId);
       if (!activity) return state;
 
-      const pointsResult = calculateActivityPoints(activity.points, correctAnswers, totalQuestions);
+      const pointsResult = calculateActivityPoints(activity.points, correctAnswers, totalQuestions, hintsUsed);
       const streakBonus = calculateStreakBonus(state.currentStreak);
       const totalEarned = pointsResult.earnedPoints + streakBonus;
 
@@ -278,10 +278,10 @@ export function GameProvider({ children }) {
   }, []);
 
   // Action creators
-  const completeActivity = useCallback((activityId, correctAnswers, totalQuestions, topic) => {
+  const completeActivity = useCallback((activityId, correctAnswers, totalQuestions, topic, hintsUsed = 0) => {
     dispatch({
       type: 'COMPLETE_ACTIVITY',
-      payload: { activityId, correctAnswers, totalQuestions, topic },
+      payload: { activityId, correctAnswers, totalQuestions, topic, hintsUsed },
     });
   }, []);
 
