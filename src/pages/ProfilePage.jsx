@@ -6,7 +6,6 @@
  */
 
 import { useGame } from '../context/GameContext';
-import { computeLevel } from '../engine/levelEngine';
 import { computeAnalytics } from '../engine/analyticsEngine';
 import { getAllBadgesWithStatus } from '../engine/badgeEngine';
 import ProgressBar from '../components/ProgressBar';

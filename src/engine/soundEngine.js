@@ -198,7 +198,7 @@ export async function playBGM(url = import.meta.env.BASE_URL + 'bgm.m4a') {
     if (bgmSource) {
       try {
         bgmSource.stop();
-      } catch (e) {}
+      } catch { /* ignore */ }
       bgmSource.disconnect();
     }
 
@@ -225,7 +225,7 @@ export function stopBGM() {
   if (bgmSource) {
     try {
       bgmSource.stop();
-    } catch (e) {}
+    } catch { /* ignore */ }
     bgmSource.disconnect();
     bgmSource = null;
   }

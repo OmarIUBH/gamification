@@ -8,7 +8,7 @@
  * This context is the single source of truth for all gamification data
  * and drives the entire reward/feedback loop of the application.
  */
-
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
 import { calculateActivityPoints, calculateStreakBonus } from '../engine/pointsEngine.js';
 import { computeLevel, checkLevelUp } from '../engine/levelEngine.js';
@@ -355,4 +355,3 @@ export function useGame() {
   return context;
 }
 
-export default GameContext;

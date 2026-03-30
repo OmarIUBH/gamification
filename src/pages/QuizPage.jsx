@@ -10,7 +10,7 @@
  */
 
 import { useState, useEffect, useMemo } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { useGame } from '../context/GameContext';
 import activities from '../data/activities';
 import ProgressBar from '../components/ProgressBar';
@@ -18,7 +18,6 @@ import { playClick, playCorrect, playIncorrect, playQuizStart, playPerfect, play
 
 export default function QuizPage() {
   const { activityId } = useParams();
-  const navigate = useNavigate();
   const { completeActivity } = useGame();
 
   const activity = activities.find((a) => a.id === activityId);
@@ -50,18 +49,8 @@ export default function QuizPage() {
     return () => stopBGM();
   }, []);
 
-  if (!activity) {
-    return (
-      <div className="empty-state">
-        <div className="empty-state-icon">❓</div>
-        <p className="empty-state-text">Activity not found.</p>
-        <Link to="/activities" className="btn btn-primary mt-lg">Back to Activities</Link>
-      </div>
-    );
-  }
-
-  const question = activity.questions[currentQuestion];
-  const totalQuestions = activity.questions.length;
+  const question = activity?.questions?.[currentQuestion];
+  const totalQuestions = activity?.questions?.length || 0;
   const letters = ['A', 'B', 'C', 'D'];
 
   // Shuffle options so users memorize the answer, not the position
@@ -71,11 +60,22 @@ export default function QuizPage() {
     const mapped = question.options.map((opt, idx) => ({ text: opt, originalIndex: idx }));
     // Fisher-Yates shuffle
     for (let i = mapped.length - 1; i > 0; i--) {
+      // eslint-disable-next-line react-hooks/purity
       const j = Math.floor(Math.random() * (i + 1));
       [mapped[i], mapped[j]] = [mapped[j], mapped[i]];
     }
     return mapped;
   }, [question]);
+
+  if (!activity) {
+    return (
+      <div className="empty-state">
+        <div className="empty-state-icon">❓</div>
+        <p className="empty-state-text">Activity not found.</p>
+        <Link to="/activities" className="btn btn-primary mt-lg">Back to Activities</Link>
+      </div>
+    );
+  }
 
   const handleSelectAnswer = (index) => {
     if (isAnswered) return;
