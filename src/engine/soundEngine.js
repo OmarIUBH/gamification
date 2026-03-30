@@ -163,3 +163,71 @@ export function playPerfect() {
     { freq: 1568, type: 'triangle', duration: 0.3, volume: 0.35, delay: 0.3 },
   ]);
 }
+
+/* ─── Background Music (BGM) ─── */
+let bgmBuffer = null;
+let bgmSource = null;
+let isBgmPlaying = false;
+let isBgmLoading = false;
+
+export async function playBGM(url = import.meta.env.BASE_URL + 'bgm.m4a') {
+  if (isBgmPlaying) return;
+  const ctx = getAudioContext();
+  
+  if (ctx.state === 'suspended') {
+    await ctx.resume();
+  }
+
+  // Prevent multiple simultaneous fetches
+  if (isBgmLoading) return;
+  isBgmLoading = true;
+
+  try {
+    if (!bgmBuffer) {
+      const response = await fetch(url);
+      const arrayBuffer = await response.arrayBuffer();
+      bgmBuffer = await ctx.decodeAudioData(arrayBuffer);
+    }
+
+    if (isBgmPlaying) {
+      isBgmLoading = false;
+      return; 
+    }
+
+    // Double check we don't duplicate on race condition
+    if (bgmSource) {
+      try {
+        bgmSource.stop();
+      } catch (e) {}
+      bgmSource.disconnect();
+    }
+
+    bgmSource = ctx.createBufferSource();
+    bgmSource.buffer = bgmBuffer;
+    bgmSource.loop = true;
+
+    const gainNode = ctx.createGain();
+    gainNode.gain.value = 0.15; // Set volume to match Youtube player (15%)
+
+    bgmSource.connect(gainNode);
+    gainNode.connect(ctx.destination);
+
+    bgmSource.start(0);
+    isBgmPlaying = true;
+  } catch (err) {
+    console.warn("Failed to build/play BGM:", err);
+  } finally {
+    isBgmLoading = false;
+  }
+}
+
+export function stopBGM() {
+  if (bgmSource) {
+    try {
+      bgmSource.stop();
+    } catch (e) {}
+    bgmSource.disconnect();
+    bgmSource = null;
+  }
+  isBgmPlaying = false;
+}

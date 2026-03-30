@@ -14,8 +14,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useGame } from '../context/GameContext';
 import activities from '../data/activities';
 import ProgressBar from '../components/ProgressBar';
-import { playClick, playCorrect, playIncorrect, playQuizStart, playPerfect } from '../engine/soundEngine';
-import YouTube from 'react-youtube';
+import { playClick, playCorrect, playIncorrect, playQuizStart, playPerfect, playBGM, stopBGM } from '../engine/soundEngine';
 
 export default function QuizPage() {
   const { activityId } = useParams();
@@ -45,20 +44,11 @@ export default function QuizPage() {
     playQuizStart();
   }, [activityId]);
 
-  const onPlayerReady = (event) => {
-    event.target.setVolume(15); 
-    event.target.playVideo();
-  };
-
-  const ytOpts = {
-    height: '0',
-    width: '0',
-    playerVars: {
-      autoplay: 1,
-      loop: 1,
-      playlist: 'eRZbQzbpUlU', // playlist needs to be the same video id to loop
-    },
-  };
+  // Play BGM when component mounts, stop when it unmounts
+  useEffect(() => {
+    playBGM();
+    return () => stopBGM();
+  }, []);
 
   if (!activity) {
     return (
@@ -154,13 +144,6 @@ export default function QuizPage() {
 
   return (
     <>
-      <YouTube 
-        videoId="eRZbQzbpUlU" 
-        opts={ytOpts} 
-        onReady={onPlayerReady} 
-        className="hide-youtube-player"
-        style={{ display: 'none' }}
-      />
       {showResults ? (
         <div className="quiz-container">
           <div className="results-container">
