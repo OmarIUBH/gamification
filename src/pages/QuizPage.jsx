@@ -18,7 +18,7 @@ import { playClick, playCorrect, playIncorrect, playQuizStart, playPerfect, play
 
 export default function QuizPage() {
   const { activityId } = useParams();
-  const { completeActivity } = useGame();
+  const { completeActivity, isAudioMuted } = useGame();
 
   const activity = activities.find((a) => a.id === activityId);
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -29,6 +29,21 @@ export default function QuizPage() {
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [hintsUsed, setHintsUsed] = useState(0);
   const [currentHint, setCurrentHint] = useState(null);
+
+  // Handle active-page BGM with reactive mute state
+  useEffect(() => {
+    if (!isAudioMuted) {
+      console.log("🎵 playBGM triggered in QuizPage");
+      playBGM();
+    } else {
+      console.log("🔇 stopBGM triggered in QuizPage");
+      stopBGM();
+    }
+
+    return () => {
+      stopBGM();
+    };
+  }, [isAudioMuted]);
 
   // Reset state when activity changes + play start sound
   useEffect(() => {
@@ -43,11 +58,6 @@ export default function QuizPage() {
     playQuizStart();
   }, [activityId]);
 
-  // Play BGM when component mounts, stop when it unmounts
-  useEffect(() => {
-    playBGM();
-    return () => stopBGM();
-  }, []);
 
   const question = activity?.questions?.[currentQuestion];
   const totalQuestions = activity?.questions?.length || 0;

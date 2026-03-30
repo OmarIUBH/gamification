@@ -16,6 +16,7 @@ import { evaluateNewBadges } from '../engine/badgeEngine.js';
 import { computeStreak, getStreakMessage } from '../engine/streakEngine.js';
 import { computeMissionProgress } from '../engine/missionEngine.js';
 import { rankUsers, getUserRank } from '../engine/leaderboardEngine.js';
+import { setMuteState } from '../engine/soundEngine.js';
 import seedUsers from '../data/users.js';
 import activities from '../data/activities.js';
 
@@ -76,6 +77,9 @@ function getInitialState() {
     // Session metadata
     joinDate: new Date().toISOString().split('T')[0],
     lastActiveDate: null,
+
+    // Audio settings
+    isAudioMuted: localStorage.getItem('eduquest_muted') === 'true',
   };
 }
 
@@ -248,6 +252,15 @@ function gameReducer(state, action) {
       };
     }
 
+    case 'TOGGLE_MUTE': {
+      const newState = !state.isAudioMuted;
+      localStorage.setItem('eduquest_muted', newState);
+      return {
+        ...state,
+        isAudioMuted: newState,
+      };
+    }
+
     case 'RESET_STATE': {
       localStorage.removeItem(STORAGE_KEY);
       return getInitialState();
@@ -277,6 +290,11 @@ export function GameProvider({ children }) {
     dispatch({ type: 'RECORD_LOGIN' });
   }, []);
 
+  // Sync mute state with soundEngine
+  useEffect(() => {
+    setMuteState(state.isAudioMuted);
+  }, [state.isAudioMuted]);
+
   // Action creators
   const completeActivity = useCallback((activityId, correctAnswers, totalQuestions, topic, hintsUsed = 0) => {
     dispatch({
@@ -299,6 +317,11 @@ export function GameProvider({ children }) {
   const loginUser = useCallback((name) => {
     dispatch({ type: 'LOGIN_USER', payload: { name } });
   }, []);
+
+  const toggleMute = useCallback(() => {
+    setMuteState(!state.isAudioMuted);
+    dispatch({ type: 'TOGGLE_MUTE' });
+  }, [state.isAudioMuted]);
 
   const resetState = useCallback(() => {
     dispatch({ type: 'RESET_STATE' });
@@ -342,6 +365,7 @@ export function GameProvider({ children }) {
     dismissNotification,
     loginUser,
     resetState,
+    toggleMute,
   };
 
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>;

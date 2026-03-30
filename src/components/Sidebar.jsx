@@ -5,6 +5,7 @@
  * links to all pages, user info footer, and mobile-responsive toggle.
  */
 
+import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useGame } from '../context/GameContext';
 import { playNav } from '../engine/soundEngine';
@@ -20,11 +21,18 @@ const navItems = [
 ];
 
 export default function Sidebar({ isOpen, onClose }) {
-  const { userName, userAvatar, levelInfo } = useGame();
+  const { userName, userAvatar, levelInfo, isAudioMuted, toggleMute } = useGame();
 
   const handleNavClick = () => {
     playNav();
     onClose();
+  };
+
+  const handleToggleMute = () => {
+    toggleMute();
+    if (isAudioMuted) { // If it WAS muted, it will now be unmuted
+      playNav(); 
+    }
   };
 
   return (
@@ -58,6 +66,15 @@ export default function Sidebar({ isOpen, onClose }) {
 
         {/* User Info Footer */}
         <div className="sidebar-footer">
+          <button 
+            className={`sidebar-mute-toggle ${isAudioMuted ? 'active' : ''}`}
+            onClick={handleToggleMute}
+            aria-label={isAudioMuted ? 'Unmute sounds' : 'Mute sounds'}
+          >
+            <span className="nav-link-icon">{isAudioMuted ? '🔇' : '🔊'}</span>
+            <span>{isAudioMuted ? 'Sounds Muted' : 'Sounds On'}</span>
+          </button>
+
           <div className="sidebar-user">
             <span className="sidebar-avatar">{userAvatar}</span>
             <div className="sidebar-user-info">

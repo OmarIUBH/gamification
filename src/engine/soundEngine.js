@@ -12,6 +12,20 @@
  */
 
 let audioCtx = null;
+let muted = localStorage.getItem('eduquest_muted') === 'true';
+
+export function setMuteState(isMuted) {
+  muted = isMuted;
+  localStorage.setItem('eduquest_muted', muted);
+}
+
+export async function initAudio() {
+  const ctx = getAudioContext();
+  if (ctx.state === 'suspended') {
+    await ctx.resume();
+    console.log("🔊 AudioContext resumed via user gesture.");
+  }
+}
 
 function getAudioContext() {
   if (!audioCtx) {
@@ -29,6 +43,7 @@ function getAudioContext() {
  * @param {number} delay - seconds before playing
  */
 function playTone(frequency, type = 'sine', duration = 0.15, volume = 0.3, delay = 0) {
+  if (muted) return;
   try {
     const ctx = getAudioContext();
     const osc = ctx.createOscillator();
@@ -169,9 +184,15 @@ let bgmBuffer = null;
 let bgmSource = null;
 let isBgmPlaying = false;
 let isBgmLoading = false;
+let bgmPlaybackTime = 0;
+let bgmStartTime = 0;
 
+/**
+ * Plays BGM from the saved playback time.
+ */
 export async function playBGM(url = import.meta.env.BASE_URL + 'bgm.m4a') {
-  if (isBgmPlaying) return;
+  if (muted || isBgmPlaying) return;
+  console.log("🎵 Starting BGM:", url);
   const ctx = getAudioContext();
   
   if (ctx.state === 'suspended') {
@@ -184,9 +205,13 @@ export async function playBGM(url = import.meta.env.BASE_URL + 'bgm.m4a') {
 
   try {
     if (!bgmBuffer) {
+      console.log("📥 Fetching BGM file...");
       const response = await fetch(url);
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const arrayBuffer = await response.arrayBuffer();
+      console.log("📂 Decoding BGM data...");
       bgmBuffer = await ctx.decodeAudioData(arrayBuffer);
+      console.log("✅ BGM loaded and ready.");
     }
 
     if (isBgmPlaying) {
@@ -207,23 +232,35 @@ export async function playBGM(url = import.meta.env.BASE_URL + 'bgm.m4a') {
     bgmSource.loop = true;
 
     const gainNode = ctx.createGain();
-    gainNode.gain.value = 0.15; // Set volume to match Youtube player (15%)
+    gainNode.gain.value = 0.15;
 
     bgmSource.connect(gainNode);
     gainNode.connect(ctx.destination);
 
-    bgmSource.start(0);
+    // Start playing from the saved time
+    bgmSource.start(0, bgmPlaybackTime);
+    bgmStartTime = ctx.currentTime - bgmPlaybackTime;
+    
     isBgmPlaying = true;
+    console.log(`▶️ BGM started from ${bgmPlaybackTime.toFixed(2)}s.`);
   } catch (err) {
-    console.warn("Failed to build/play BGM:", err);
+    console.warn("❌ Failed to play BGM:", err);
   } finally {
     isBgmLoading = false;
   }
 }
 
+/**
+ * Stops BGM and saves the current playback time.
+ */
 export function stopBGM() {
   if (bgmSource) {
     try {
+      const ctx = getAudioContext();
+      if (bgmBuffer && isBgmPlaying) {
+        // Calculate the elapsed time and wrap it around the track duration
+        bgmPlaybackTime = (ctx.currentTime - bgmStartTime) % bgmBuffer.duration;
+      }
       bgmSource.stop();
     } catch { /* ignore */ }
     bgmSource.disconnect();
